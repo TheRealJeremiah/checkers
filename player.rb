@@ -12,16 +12,17 @@ class HumanPlayer
   end
 
   def parse(input)
-    letters = ('a'..'h').to_a
-    raise 'nope' if input.length!=5 || input[2] != ' '
-
-    col1 = letters.index(input[0])
-    raise "nope" if col1.nil?
-    row1 = 8 - Integer(input[1])
-    col2 = letters.index(input[3])
-    raise "nope" if col2.nil?
-    row2 = 8 - Integer(input[4])
-
-    [[row1, col1], [row2, col2]]
+    coordinates = input.split
+    coordinates.map { |let_num| row_col(let_num) }
   end
+
+  def row_col(letter_number)
+    letters = ('a'..'h').to_a
+    row = 8 - Integer(letter_number[1])
+    col = letters.index(letter_number[0])
+
+    raise ArgumentError.new("column not a letter") if col.nil?
+    [row,col]
+  end
+
 end

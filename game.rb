@@ -14,9 +14,9 @@ class Game
     color = turn.color
     board.display
     until board.won?
-      move = turn.request_move
-      next unless pre_validate(move, color)
       begin
+        move = turn.request_move
+        next unless pre_validate(move, color)
         board.move(move)
       rescue InvalidMoveError => e
         puts e

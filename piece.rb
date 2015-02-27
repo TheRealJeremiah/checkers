@@ -23,6 +23,25 @@ class Piece
     @king = true if color == :red && pos[0] == 7
   end
 
+  def perform_moves(moves)
+    if moves.length == 2
+      move(moves[1])
+    else
+      #check if any errors in our jumps
+      new_board = board.dup
+      new_piece = new_board[pos].dup(new_board)
+      moves.drop(1).each do |new_pos|
+        new_piece.perform_jump(new_pos)
+      end
+      #do the jumps
+      moves.drop(1).each do |new_pos|
+        self.perform_jump(new_pos)
+      end
+
+    end
+
+  end
+
   def move(new_pos)
     dir = subtract(new_pos, pos)
     if possible_slide.include?(dir)
@@ -35,6 +54,23 @@ class Piece
       raise InvalidMoveError.new("You can't move there!")
     end
   end
+
+  def dup(dup_board)
+    Piece.new(dup_board, pos, color)
+  end
+
+  def perform_jump(new_pos)
+    jump_dir = subtract(new_pos, pos)
+    row, col = jump_dir
+    dir = [row / 2, col / 2]
+    raise InvalidMoveError.new('invalid jump') unless valid_take_dir?(dir)
+    board[add(dir, pos)] = nil
+    board[new_pos] = self
+    board[pos] = nil
+    @pos = new_pos
+  end
+  
+  private
 
   def possible_slide
     all_move_dirs = []
@@ -59,22 +95,11 @@ class Piece
   def perform_slide(new_pos)
     dir = subtract(new_pos, pos)
     return false unless valid_move_dir?(dir)
-    board[pos] = nil
     board[new_pos] = self
-    pos = new_pos
+    board[pos] = nil
+    @pos = new_pos
   end
 
-  def perform_jump(new_pos)
-    jump_dir = subtract(new_pos, pos)
-    row, col = jump_dir
-    dir = [row / 2, col / 2]
-    return false unless valid_take_dir?(dir)
-
-    board[pos] = nil
-    board[add(dir, pos)] = nil
-    board[new_pos] = self
-    pos = new_pos
-  end
 
   def move_directions
     if king
@@ -89,10 +114,8 @@ class Piece
   end
 
   def valid_take_dir?(dir)
-    row, col = dir
-    take = [2 * row, 2 * col]
     new_pos = add(dir, pos)
-    new_take_pos = add(take, pos)
+    new_take_pos = add(dir, new_pos)
     on_board?(new_pos) && board.empty?(new_take_pos) && !board.empty?(new_pos)
   end
 
